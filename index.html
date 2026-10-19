@@ -1,0 +1,470 @@
+
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SKIN RUSH — Skin Opening Simulator</title>
+<style>
+:root{--bg:#070d18;--panel:#101b2d;--panel2:#14233a;--line:#263957;--muted:#9eb1ce;--gold:#ffd36a;--blue:#4ea4ff;--green:#16c784}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 50% -15%,#1a3b62 0,#091321 50%,#060b13 100%);color:#eef5ff;font:15px system-ui,Arial,sans-serif;min-height:100vh}
+button{font:inherit;cursor:pointer;border:0;color:inherit}
+button:disabled{opacity:.45;cursor:not-allowed}
+.layout{display:grid;grid-template-columns:205px minmax(0,1fr) 255px;min-height:100vh;max-width:1600px;margin:auto}
+aside{background:#08111fe8;border-right:1px solid #20324d;padding:20px 14px;display:flex;flex-direction:column;gap:10px}
+.brand{font-size:20px;font-weight:900;letter-spacing:1px;padding:8px 6px 24px}
+.brand span{color:var(--gold)}
+.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:2px;font-weight:600}
+.nav{width:100%;text-align:left;background:transparent;padding:12px;border-radius:10px;color:#b4c5df}
+.nav.active,.nav:hover{background:#123b69;color:white}
+.nav i{font-style:normal;margin-right:9px}
+.user{margin-top:auto;border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font-size:12px}
+main{padding:22px;min-width:0}
+.topline{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:20px}
+.topline h1{font-size:25px;margin:0}
+.balance{border:1px solid #6b5b2e;background:#251f12;padding:10px 15px;border-radius:12px;color:var(--gold);font-weight:800}
+.cases{display:grid;grid-template-columns:repeat(5,minmax(105px,1fr));gap:10px;margin-bottom:18px}
+.case{background:linear-gradient(160deg,#172943,#0d1727);border:1px solid #2b4261;border-radius:12px;padding:12px 6px 10px;text-align:center;transition:.15s;min-width:0}
+.case:hover,.case.active{border-color:var(--gold);box-shadow:0 0 0 1px #ffd36a45,0 6px 25px #0005;transform:translateY(-2px)}
+.crate{font-size:36px;filter:drop-shadow(0 7px 5px #0008);margin-bottom:7px}
+.case strong{display:block;font-size:12px}
+.case small{display:block;color:var(--gold);margin-top:5px}
+.opening{background:linear-gradient(145deg,#101d30ef,#09111e);border:1px solid #2b3f5c;border-radius:18px;padding:18px;margin-bottom:18px;box-shadow:0 16px 45px #0004}
+.opening-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.opening-head h2{margin:0;font-size:18px}
+.pill{font-size:11px;border:1px solid #355070;color:#aec8e8;border-radius:99px;padding:5px 9px}
+.reel{height:230px;position:relative;overflow:hidden;border-radius:13px;background:linear-gradient(90deg,#070d17,#18253b 50%,#070d17);border:1px solid #263a57;display:flex;align-items:center}
+.reel:before,.reel:after{content:"";position:absolute;top:0;bottom:0;width:70px;z-index:2;pointer-events:none}
+.reel:before{left:0;background:linear-gradient(90deg,#080f1b,transparent)}
+.reel:after{right:0;background:linear-gradient(-90deg,#080f1b,transparent)}
+.marker{position:absolute;z-index:3;left:50%;top:0;bottom:0;width:3px;background:var(--gold);box-shadow:0 0 14px var(--gold)}
+.marker:before,.marker:after{content:"";position:absolute;left:-7px;border-left:8px solid transparent;border-right:8px solid transparent}
+.marker:before{top:0;border-top:12px solid var(--gold)}
+.marker:after{bottom:0;border-bottom:12px solid var(--gold)}
+.reel-track{display:flex;gap:10px;align-items:center;padding:0 14px;transition:transform 3.6s cubic-bezier(.08,.72,.12,1);will-change:transform}
+.skin{background:#121e30;flex:0 0 145px;height:178px;border-radius:10px;border:1px solid var(--rarity);background:linear-gradient(160deg,color-mix(in srgb,var(--rarity) 25%,#101827),#0b1220 75%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px;text-align:center;overflow:hidden}
+.weapon{font-size:46px;filter:drop-shadow(0 7px 5px #0008);margin-bottom:8px}
+.skin b{font-size:12px}
+.skin small{font-size:10px;color:#b9c7dc;margin-top:5px}
+.skin em{font-style:normal;font-size:11px;color:var(--rarity);margin-top:8px;font-weight:800}
+.r-common{--rarity:#aab5c7}
+.r-uncommon{--rarity:#65aaff}
+.r-rare{--rarity:#bd72ff}
+.r-epic{--rarity:#ff5ac8}
+.r-legendary{--rarity:#ffbd4a}
+.actions{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:16px}
+.primary{background:linear-gradient(180deg,#22d69a,#079968);padding:13px 30px;border-radius:10px;font-weight:900;box-shadow:0 7px 22px #00bb7b24}
+.primary:hover{filter:brightness(1.1)}
+.secondary{background:#1a2b43;border:1px solid #344b6c;padding:11px 15px;border-radius:9px}
+.hint{color:var(--muted);font-size:12px;text-align:center;margin:12px 0 0}
+.section{background:#0d1828;border:1px solid #233650;border-radius:14px;padding:15px;margin-bottom:15px}
+.section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.section-title h3{margin:0;font-size:15px}
+.section-title small{color:var(--muted)}
+.inventory{display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:9px}
+.invitem{background:#111c2c;position:relative;border:1px solid var(--rarity);background:linear-gradient(150deg,color-mix(in srgb,var(--rarity) 17%,#101827),#0a111d);border-radius:10px;padding:10px;min-width:0}
+.invitem .weapon{font-size:34px;text-align:center}
+.invitem b{display:block;font-size:12px}
+.invitem small{color:var(--muted);font-size:10px}
+.invitem .price{color:var(--gold);font-weight:800;font-size:12px;margin-top:8px}
+.sell{width:100%;margin-top:8px;background:#21344c;border-radius:7px;padding:7px;font-size:11px}
+.right{border-left:1px solid #20324d;background:#091321;padding:18px 13px}
+.right .section{padding:13px;background:#101c2d}
+.right h3{margin:0 0 12px;font-size:15px}
+.drop{display:flex;align-items:center;gap:10px;border-bottom:1px solid #24344a;padding:10px 0}
+.drop:last-child{border:0}
+.mini{background:#142035;width:49px;height:43px;border-radius:8px;background:linear-gradient(135deg,color-mix(in srgb,var(--rarity) 25%,#142035),#0b1321);border:1px solid var(--rarity);display:grid;place-items:center;font-size:25px;flex-shrink:0}
+.drop b{font-size:11px;display:block}
+.drop small{color:var(--rarity);font-size:10px}
+.drop .value{margin-left:auto;font-size:11px;color:var(--gold);white-space:nowrap}
+.free{background:linear-gradient(140deg,#2b2514,#151b24)!important;border-color:#725b2d}
+.free button{width:100%;background:#b8872e;color:#201606;padding:9px;border-radius:8px;font-weight:800}
+.free p{font-size:11px;color:#d4c7a4;line-height:1.45}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#16263a;border:1px solid #456181;border-radius:10px;padding:12px 18px;box-shadow:0 10px 40px #0008;z-index:9;opacity:0;pointer-events:none;transition:.2s}
+.toast.show{opacity:1}
+.overlay{position:fixed;inset:0;background:#030711d9;z-index:10;display:none;align-items:center;justify-content:center;padding:20px}
+.modal{width:min(420px,100%);background:#101d30;border:1px solid #38516e;border-radius:18px;padding:22px;text-align:center;box-shadow:0 25px 80px #0009}
+.modal .weapon{font-size:78px}
+.modal h2{margin:4px 0}
+.modal p{color:var(--muted);font-size:13px}
+.modal .rarity{color:var(--rarity);font-weight:900}
+.modal .primary{width:100%;margin-top:10px}
+@media(max-width:1050px){.layout{grid-template-columns:165px minmax(0,1fr)}.right{display:none}.cases{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:650px){.cases{grid-template-columns:repeat(2,minmax(0,1fr))}.layout{display:block}aside{display:none}main{padding:12px}.topline h1{font-size:20px}.cases{grid-template-columns:repeat(2,minmax(0,1fr))}.reel{height:195px}.skin{flex-basis:125px;height:155px}.inventory{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* DELUXE VISUAL UPGRADE */
+.opening{position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 0%,#24466b88,transparent 55%),linear-gradient(145deg,#101d30f5,#070d18);border:1px solid #385574}
+.case-stage{height:142px;display:flex;align-items:center;justify-content:center;perspective:700px;position:relative}
+.stage-glow{position:absolute;width:240px;height:90px;background:#338bff38;filter:blur(35px);border-radius:50%;bottom:3px}
+.case3d{width:150px;height:90px;position:relative;transform-style:preserve-3d;transform:rotateX(-13deg) rotateY(-27deg);animation:floatcase 4s ease-in-out infinite;filter:drop-shadow(0 18px 12px #0009)}
+.case3d .front{position:absolute;width:150px;height:90px;left:0;top:0;background:linear-gradient(145deg,#29435b,#101d2c 65%,#263c51);border:2px solid #8ea5bb;border-radius:7px;transform:translateZ(24px);box-shadow:inset 0 0 0 5px #17293a,inset 0 0 0 7px #48617a}
+.case3d .top{position:absolute;width:150px;height:48px;left:0;top:-24px;background:linear-gradient(135deg,#526b80,#1b2b3d);border:2px solid #8ea5bb;transform:rotateX(90deg) translateZ(24px);border-radius:5px}
+.case3d .side{position:absolute;width:48px;height:90px;right:-24px;top:0;background:linear-gradient(90deg,#152436,#3b5267);border:2px solid #70869c;transform:rotateY(90deg) translateZ(24px);border-radius:5px}
+.case3d .emblem{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) translateZ(27px);font-size:30px;color:#ffd36a;text-shadow:0 0 15px #ffd36a}
+.case3d .latch{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) translateZ(29px);width:18px;height:28px;border-radius:4px;background:linear-gradient(90deg,#8b672a,#ffe39a,#9c732c);border:1px solid #fff1b3}
+@keyframes floatcase{0%,100%{transform:translateY(0) rotateX(-13deg) rotateY(-27deg)}50%{transform:translateY(-9px) rotateX(-8deg) rotateY(-17deg)}}
+.case3d.opening{animation:caseopen .75s ease-in forwards}
+@keyframes caseopen{0%{transform:scale(1) rotateX(-13deg) rotateY(-27deg)}40%{transform:scale(1.16) rotateX(-30deg) rotateY(20deg)}100%{transform:scale(.5) rotateX(65deg) rotateY(180deg);opacity:0}}
+.skin-art{width:116px;height:64px;margin:2px auto 7px;filter:drop-shadow(0 8px 5px #0008);overflow:visible}
+.skin-art.large{width:210px;height:118px}
+.skin-art .accent{fill:var(--rarity);stroke:#101722;stroke-width:1.5}
+.skin-art .shine{fill:#fff;opacity:.78}
+.skin-art .dark{fill:#17212e;stroke:#070b10;stroke-width:2}
+.skin-art .barrel{fill:#28394b;stroke:#101722;stroke-width:2}
+.skin-art .detail{fill:none;stroke:#f7fbff;stroke-width:1.3;opacity:.8}
+.reel.spinning{box-shadow:inset 0 0 45px #5e9dff55;border-color:#5b8ed1}
+.opening-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:4}
+.opening-flash.burst{animation:flash .55s ease-out}
+@keyframes flash{0%{opacity:0}18%{opacity:.9}100%{opacity:0}}
+.crate-icon{display:inline-flex;width:43px;height:34px;align-items:center;justify-content:center;border:2px solid #8fa7be;border-radius:5px;background:linear-gradient(145deg,#516a80,#17283a);box-shadow:inset 0 0 0 3px #263e55,0 7px 10px #0006;position:relative}
+.crate-icon:before{content:"";position:absolute;left:-3px;right:-3px;top:5px;height:3px;background:#d4b56a}
+.crate-icon:after{content:"";position:absolute;right:5px;top:10px;width:5px;height:10px;background:#e8c66e;border-radius:2px}
+
+/* DELUXE VISUAL POLISH */
+body{background:radial-gradient(ellipse at 50% -18%,#244d79 0,#0a1628 42%,#050912 100%)}
+.panel,.card,.opening-panel{box-shadow:0 18px 50px #0005,inset 0 1px 0 #ffffff08}
+.skin,.invitem{background:#111c2c;position:relative;overflow:hidden;background:linear-gradient(145deg,#1b2d47,#0d1727 72%);border:1px solid #ffffff12;box-shadow:0 8px 22px #0004,inset 0 1px 0 #ffffff0b;transition:transform .22s ease,box-shadow .22s ease}
+.skin:hover,.invitem:hover{transform:translateY(-3px);box-shadow:0 12px 28px #0007,0 0 22px #58aaff18}
+.skin:before,.invitem:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(125deg,#ffffff0b,transparent 34%,transparent 72%,#72baff0a)}
+.skin .weapon,.invitem .weapon{filter:drop-shadow(0 7px 7px #0009)}
+.r-common{--rarity-glow:#a8bacd}
+.r-uncommon{--rarity-glow:#56a9ff}
+.r-rare{--rarity-glow:#c16aff}
+.r-epic{--rarity-glow:#ff5bbd}
+.r-legendary{--rarity-glow:#ffd36a}
+.skin.r-common,.invitem.r-common{border-color:#a8bacd35}
+.skin.r-uncommon,.invitem.r-uncommon{border-color:#56a9ff66}
+.skin.r-rare,.invitem.r-rare{border-color:#c16aff80}
+.skin.r-epic,.invitem.r-epic{border-color:#ff5bbd99}
+.skin.r-legendary,.invitem.r-legendary{border-color:#ffd36ab3;box-shadow:0 0 25px #ffd36a18,inset 0 0 22px #ffd36a08}
+.reel{background:radial-gradient(ellipse at 50% 45%,#233d60 0,#111f34 48%,#070d17 100%);border-color:#41638b;box-shadow:inset 0 0 45px #0008,0 0 25px #4ea4ff12}
+.reel.spinning{box-shadow:inset 0 0 60px #5e9dff55,0 0 30px #4ea4ff25}
+.marker{box-shadow:0 0 10px #ffd36a,0 0 24px #ffd36a99}
+.case.active{box-shadow:0 0 0 1px #ffd36a55,0 10px 28px #0005,0 0 22px #4ea4ff15}
+button.primary{box-shadow:0 7px 22px #2679d955,inset 0 1px 0 #ffffff35}
+#heroCase{filter:drop-shadow(0 20px 15px #000b) drop-shadow(0 0 22px #4ea4ff33)}
+#heroCase.opening{animation:caseopen .75s ease-in forwards}
+@keyframes caseHover{from{transform:translateY(0) rotate(-1deg)}to{transform:translateY(-8px) rotate(1deg)}}
+@keyframes caseGlow{from{filter:drop-shadow(0 18px 12px #0009) drop-shadow(0 0 12px #4ea4ff55)}to{filter:drop-shadow(0 18px 12px #0009) drop-shadow(0 0 32px #ffd36a88)}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside>
+ <div class="brand">♛ SKIN <span>RUSH</span><small>3D CASE OPENING SIMULATOR</small></div>
+ <button class="nav active" data-page="open"><i>▣</i> Öppna lådor</button>
+ <button class="nav" data-page="inventory"><i>▤</i> Min samling</button>
+ <button class="nav" data-page="market"><i>⇄</i> Marknad</button>
+ <button class="nav" data-page="upgrade"><i>⬆</i> Uppgraderingar</button>
+ <button class="nav" data-page="daily"><i>🎁</i> Daglig belöning</button>
+ <div class="user">👤 Spelare_01<br><b style="color:#ffd36a">🪙 <span id="sideCoins">1000</span></b><p style="font-size:10px">Bara låtsaspengar – inget köp med riktiga pengar.</p></div>
+</aside>
+<main>
+ <div class="topline"><h1 id="pageTitle">Öppna lådor</h1><div class="balance">🪙 <span id="coins">1000</span></div></div>
+ <div id="caseView">
+  <div class="cases" id="cases"></div>
+  <section class="opening">
+   <div class="opening-head"><h2 id="selectedName">Neonlådan</h2><span class="pill">SLUMPMÄSSIGA SKINS</span></div>
+   <div class="case-stage" id="caseStage"><div class="stage-glow"></div><div class="case3d" id="heroCase"><div class="top"></div><div class="side"></div><div class="front"></div><div class="emblem">♛</div><div class="latch"></div></div></div>
+   <div class="reel" id="reel"><div class="opening-flash" id="flash"></div><div class="marker"></div><div class="reel-track" id="track"></div></div>
+   <div class="actions"><button class="primary" id="openBtn">🔑 ÖPPNA LÅDA · 100 🪙</button><button class="secondary" id="fastBtn">⏩ Snabböppning: AV</button></div>
+   <p class="hint">Alla odds är spelmekanik. Sällsynta skins är svårare att få – men inga riktiga pengar används.</p>
+  </section>
+ </div>
+ <section class="section" id="inventorySection"><div class="section-title"><h3>🎒 Din samling</h3><small id="invCount">0 skins</small></div><div class="inventory" id="inventory"></div></section>
+ <section class="section" id="otherSection" style="display:none"></section>
+</main>
+<aside class="right">
+ <section class="section free"><h3>🎁 GRATIS LÅDA</h3><p>En liten bonuslåda för att fylla på samlingen. Helt gratis!</p><button id="freeBtn">HÄMTA GRATIS LÅDA</button></section>
+ <section class="section"><h3>✨ Senaste drops</h3><div id="recent"><p style="color:var(--muted);font-size:12px">Öppna en låda för att se dina drops här.</p></div></section>
+ <section class="section"><h3>📊 Rarity-odds</h3><div style="font-size:12px;line-height:2;color:#b7c7dc">⬜ Vanlig <span style="float:right">50%</span><br>🟦 Ovanlig <span style="float:right">27%</span><br>🟪 Sällsynt <span style="float:right">15%</span><br>💗 Episk <span style="float:right">6%</span><br>🟨 Legendarisk <span style="float:right">2%</span></div></section>
+</aside>
+</div>
+<div class="toast" id="toast"></div>
+<div class="overlay" id="result"><div class="modal"><div id="resultWeapon" class="weapon">🔫</div><div class="pill" id="resultRarity">NYTT SKIN</div><h2 id="resultName">Skin name</h2><p id="resultFinish">Finish · Minimal Wear</p><div class="rarity" id="resultPrice">🪙 100</div><button class="primary" id="keepBtn">LÄGG I SAMLINGEN</button><button class="secondary" id="sellResult" style="width:100%;margin-top:8px">SÄLJ DIREKT</button></div></div>
+<script>
+const skins=[
+{name:'Pistol • Frostbyte',weapon:'🔫',finish:'Field-Tested',rarity:'common',value:35},
+{name:'SMG • Pixel Storm',weapon:'🌀',finish:'Well-Worn',rarity:'common',value:45},
+{name:'Rifle • Forest Camo',weapon:'🪖',finish:'Field-Tested',rarity:'common',value:55},
+{name:'Pistol • Blue Circuit',weapon:'🔫',finish:'Minimal Wear',rarity:'uncommon',value:90},
+{name:'Rifle • Arctic Pulse',weapon:'🔷',finish:'Factory New',rarity:'uncommon',value:125},
+{name:'Sniper • Night Grid',weapon:'🎯',finish:'Field-Tested',rarity:'uncommon',value:150},
+{name:'Rifle • Neon Viper',weapon:'🐍',finish:'Minimal Wear',rarity:'rare',value:240},
+{name:'SMG • Ultraviolet',weapon:'🟣',finish:'Factory New',rarity:'rare',value:310},
+{name:'Sniper • Deep Space',weapon:'🌌',finish:'Minimal Wear',rarity:'rare',value:420},
+{name:'Rifle • Cyber Dragon',weapon:'🐉',finish:'Factory New',rarity:'epic',value:850},
+{name:'Pistol • Solar Flare',weapon:'☀️',finish:'Factory New',rarity:'epic',value:1100},
+{name:'★ Kniv • Golden Fang',weapon:'🗡️',finish:'Factory New',rarity:'legendary',value:4500},
+{name:'Sniper • Aurora',weapon:'🌠',finish:'Factory New',rarity:'legendary',value:6000}
+];
+const rarities={common:['Vanlig','#aab5c7'],uncommon:['Ovanlig','#65aaff'],rare:['Sällsynt','#bd72ff'],epic:['Episk','#ff5ac8'],legendary:['Legendarisk','#ffbd4a']};
+const cases=[
+{name:'Neonlådan',price:100,emoji:'📦',desc:'Neon och färger'},
+{name:'Frostlådan',price:175,emoji:'🧊',desc:'Kalla finishes'},
+{name:'Pro-lådan',price:300,emoji:'💎',desc:'Bättre chans på sällsynt'},
+{name:'Guldlådan',price:500,emoji:'👑',desc:'Premium drops'},
+{name:'Mysterylådan',price:250,emoji:'🎭',desc:'Överraskning'},
+{name:'Volcanolådan',price:400,emoji:'🌋',desc:'Glödheta finishes'},
+{name:'Knivlådan',price:650,emoji:'🗡️',desc:'Extra chans på kniv'}
+];
+let coins=1000,selectedCase=0,inventory=[],recent=[],fast=false,pending=null,freeClaimed=false;
+const $=id=>document.getElementById(id);
+
+// Spelet försöker spara lokalt, men fungerar även om Safari blockerar lokal lagring.
+function saveGame(){
+ try{
+  localStorage.setItem('skinRushSaveV2',JSON.stringify({coins,inventory,recent,freeClaimed}));
+ }catch(e){}
+}
+function loadGame(){
+ try{
+  const d=JSON.parse(localStorage.getItem('skinRushSaveV2')||'null');
+  if(d&&typeof d.coins==='number'&&Array.isArray(d.inventory)){
+   coins=Math.max(0,d.coins);
+   inventory=d.inventory;
+   recent=Array.isArray(d.recent)?d.recent:[];
+   freeClaimed=!!d.freeClaimed;
+  }
+ }catch(e){}
+}
+window.addEventListener('error',function(){
+ try{toast('Ett fel uppstod. Ladda om sidan och försök igen.');}catch(e){}
+});
+function toast(s){
+ $('toast').textContent=s;
+ $('toast').classList.add('show');
+ clearTimeout(toast.t);
+ toast.t=setTimeout(()=>$('toast').classList.remove('show'),2100);
+}
+function updateCoins(){
+ $('coins').textContent=coins.toLocaleString('sv-SE');
+ $('sideCoins').textContent=coins.toLocaleString('sv-SE');
+ saveGame();
+}
+function rarityClass(s){return 'r-'+s.rarity}
+function weaponSvg(s,large=false){
+ const n=s.name.toLowerCase(),knife=n.includes('kniv'),sniper=n.includes('sniper'),pistol=n.includes('pistol');
+ let shape='';
+ if(knife){
+  shape='<path class="dark" d="M14 39 L42 29 L113 8 L91 30 L49 44 L36 54 Z"/><path class="accent" d="M42 29 L113 8 L91 30 L49 44 Z"/><path class="shine" d="M50 30 L103 13 L87 26 Z"/><path class="dark" d="M15 39 L43 34 L52 43 L33 55 L19 50 Z"/><path class="accent" d="M19 40 L39 36 L45 43 L31 49 L22 47 Z"/>';
+ }else{
+  const silhouette=pistol?'M14 26 L72 26 L87 34 L81 43 L55 43 L49 59 L34 59 L32 42 L15 39 Z':sniper?'M5 27 L30 27 L38 21 L56 21 L60 27 L111 27 L124 30 L122 36 L62 36 L55 43 L36 43 L31 38 L5 38 Z':'M6 25 L34 25 L42 19 L56 19 L59 25 L95 25 L104 29 L101 37 L62 37 L55 44 L43 44 L38 37 L17 37 L16 45 L6 45 Z';
+  const colorShape=pistol?'M20 29 L69 29 L79 35 L58 36 L52 47 L40 47 L38 38 L20 38 Z':sniper?'M37 24 L54 24 L58 29 L107 29 L109 34 L61 34 L53 39 L38 39 Z':'M36 27 L53 22 L57 27 L92 27 L97 31 L60 34 L54 40 L43 40 Z';
+  shape=`<path class="dark" d="${silhouette}"/><path class="accent" d="${colorShape}"/><path class="shine" d="M62 29 L${sniper?'103':'90'} 29 L${sniper?'104':'91'} 31 L62 32 Z"/><path class="barrel" d="${pistol?'M79 30 L105 30 L105 34 L82 34 Z':sniper?'M108 29 L127 29 L127 32 L108 32 Z':'M98 28 L122 28 L122 31 L98 31 Z'}"/><path class="dark" d="${pistol?'M37 42 L50 42 L47 60 L34 60 Z':'M42 39 L55 39 L53 54 L45 57 Z'}"/><path class="detail" d="M25 27 L25 34 M32 27 L32 34 M65 28 L65 34 M73 28 L73 34"/>`;
+ }
+ return `<svg class="skin-art ${large?'large':''}" viewBox="0 0 132 68" aria-label="${s.name}">${shape}<path class="detail" d="M12 62 L120 62" opacity=".25"/></svg>`;
+}
+function skinCard(s,small=false){
+ return `<div class="${small?'invitem':'skin'} ${rarityClass(s)}">${weaponSvg(s)}<b>${s.name}</b><small>${s.finish}</small>${small?`<div class="price">🪙 ${s.value.toLocaleString('sv-SE')}</div>`:`<em>${rarities[s.rarity][0]}</em>`}</div>`;
+}
+function renderCases(){
+ $('cases').innerHTML=cases.map((c,i)=>`<button class="case ${i===selectedCase?'active':''}" data-case="${i}"><div class="crate"><span class="crate-icon">${c.emoji}</span></div><strong>${c.name}</strong><small>🪙 ${c.price}</small></button>`).join('');
+ document.querySelectorAll('[data-case]').forEach(b=>b.onclick=()=>{
+  selectedCase=+b.dataset.case;
+  renderCases();
+  renderTrack();
+  $('selectedName').textContent=cases[selectedCase].name;
+  $('openBtn').textContent=`🔑 ÖPPNA LÅDA · ${cases[selectedCase].price} 🪙`;
+  $('heroCase').style.filter=`drop-shadow(0 18px 12px #0009) drop-shadow(0 0 18px ${['#55aaff','#72e5ff','#bd72ff','#ffd36a','#ff5ac8','#ff654f','#f5d76e'][selectedCase]}66)`;
+ });
+}
+function renderTrack(){
+ const arr=[];
+ for(let i=0;i<11;i++)arr.push(skins[Math.floor(Math.random()*skins.length)]);
+ $('track').style.transition='none';
+ $('track').style.transform='translateX(0)';
+ $('track').innerHTML=arr.map(s=>skinCard(s)).join('');
+}
+function renderInventory(){
+ $('inventory').innerHTML=inventory.slice().reverse().map((s,i)=>`<div class="invitem ${rarityClass(s)}"><div class="weapon">${s.weapon}</div><b>${s.name}</b><small>${s.finish} · ${rarities[s.rarity][0]}</small><div class="price">🪙 ${s.value.toLocaleString('sv-SE')}</div><button class="sell" data-sell="${inventory.length-1-i}">SÄLJ · ${Math.floor(s.value*.75)} 🪙</button></div>`).join('')||'<p style="color:var(--muted);font-size:13px">Din samling är tom än så länge. Öppna en låda för att få ditt första skin!</p>';
+ $('invCount').textContent=inventory.length+' skins';
+ document.querySelectorAll('[data-sell]').forEach(b=>b.onclick=()=>sell(+b.dataset.sell));
+}
+function renderRecent(){
+ $('recent').innerHTML=recent.slice(0,5).map(s=>`<div class="drop"><div class="mini ${rarityClass(s)}">${s.weapon}</div><div style="min-width:0"><b>${s.name}</b><small>${rarities[s.rarity][0]}</small></div><div class="value">${s.value}</div></div>`).join('')||'<p style="color:var(--muted);font-size:12px">Inga drops ännu.</p>';
+}
+function pickSkin(){
+ let r=Math.random(),rarity=r<.02?'legendary':r<.08?'epic':r<.23?'rare':r<.5?'uncommon':'common';
+ if(selectedCase===2&&r<.13)rarity=r<.025?'legendary':'epic';
+ if(selectedCase===3&&r<.16)rarity=r<.04?'legendary':'epic';
+ if(selectedCase===5&&r<.22)rarity=r<.08?'legendary':'epic';
+ if(selectedCase===6&&r<.35)rarity=r<.12?'legendary':r<.25?'epic':'rare';
+ let pool=skins.filter(s=>s.rarity===rarity);
+ if(!pool.length)pool=skins.filter(s=>s.rarity==='common');
+ let s={...pool[Math.floor(Math.random()*pool.length)]};
+ if(selectedCase===1&&s.rarity==='common')s.value=Math.round(s.value*1.2);
+ if(selectedCase===2&&s.rarity==='rare')s.value=Math.round(s.value*1.2);
+ if(selectedCase===3)s.value=Math.round(s.value*1.4);
+ if(selectedCase===4)s.value=Math.round(s.value*(.8+Math.random()*.8));
+ if(selectedCase===5)s.value=Math.round(s.value*1.25);
+ if(selectedCase===6)s.value=Math.round(s.value*1.5);
+ return s;
+}
+function openCase(free=false){
+ const cost=free?0:cases[selectedCase].price;
+ if(coins<cost){toast('Du har inte tillräckligt med mynt! Sälj ett skin eller hämta gratislådan.');return;}
+ coins-=cost;
+ updateCoins();
+ const win=pickSkin();
+ pending=win;
+ const hero=$('heroCase');
+ hero.classList.remove('opening');
+ void hero.offsetWidth;
+ hero.classList.add('opening');
+ $('reel').classList.add('spinning');
+ $('flash').classList.remove('burst');
+ void $('flash').offsetWidth;
+ $('flash').classList.add('burst');
+ const arr=[];
+ for(let i=0;i<27;i++)arr.push({...skins[Math.floor(Math.random()*skins.length)]});
+ arr[20]=win;
+ $('track').style.transition='none';
+ $('track').style.transform='translateX(0)';
+ $('track').innerHTML=arr.map(s=>skinCard(s)).join('');
+ $('openBtn').disabled=true;
+ $('freeBtn').disabled=true;
+ requestAnimationFrame(()=>requestAnimationFrame(()=>{
+  const track=$('track'),reel=$('reel'),winnerCard=track.children[20];
+  track.style.transition=fast?'transform .28s cubic-bezier(.12,.8,.2,1)':'transform 3.8s cubic-bezier(.08,.72,.12,1)';
+  const center=reel.clientWidth/2;
+  const winnerCenter=winnerCard.offsetLeft+winnerCard.offsetWidth/2;
+  track.style.transform=`translateX(${center-winnerCenter}px)`;
+ }));
+ setTimeout(()=>{
+  showResult(win);
+  $('reel').classList.remove('spinning');
+  hero.classList.remove('opening');
+  $('openBtn').disabled=false;
+  $('freeBtn').disabled=false;
+ },fast?400:4050);
+}
+function showResult(s){
+ $('resultWeapon').innerHTML=weaponSvg(s,true);
+ $('resultName').textContent=s.name;
+ $('resultFinish').textContent=s.finish+' · '+rarities[s.rarity][0];
+ $('resultRarity').textContent=rarities[s.rarity][0].toUpperCase();
+ $('resultRarity').style.borderColor=rarities[s.rarity][1];
+ $('resultRarity').style.color=rarities[s.rarity][1];
+ $('resultPrice').textContent='🪙 '+s.value.toLocaleString('sv-SE');
+ $('resultPrice').style.color=rarities[s.rarity][1];
+ $('result').style.display='flex';
+}
+function keep(){
+ if(!pending)return;
+ inventory.push(pending);
+ recent.unshift(pending);
+ recent=recent.slice(0,10);
+ pending=null;
+ saveGame();
+ $('result').style.display='none';
+ renderInventory();
+ renderRecent();
+ renderTrack();
+ toast('Skin sparat i din samling!');
+}
+function sell(i){
+ const s=inventory.splice(i,1)[0];
+ if(!s)return;
+ saveGame();
+ const amount=Math.floor(s.value*.75);
+ coins+=amount;
+ updateCoins();
+ renderInventory();
+ toast(`Sålde skin för ${amount} mynt.`);
+}
+$('openBtn').onclick=()=>openCase(false);
+$('fastBtn').onclick=()=>{
+ fast=!fast;
+ $('fastBtn').textContent='⏩ Snabböppning: '+(fast?'PÅ':'AV');
+};
+$('keepBtn').onclick=keep;
+$('sellResult').onclick=()=>{
+ if(pending){
+  const s=pending;
+  coins+=Math.floor(s.value*.75);
+  updateCoins();
+  pending=null;
+  $('result').style.display='none';
+  renderTrack();
+  toast('Skin sålt! Mynt tillagda.');
+ }
+};
+$('freeBtn').onclick=()=>{
+ if(freeClaimed){toast('Gratislådan är redan hämtad i den här sessionen!');return;}
+ freeClaimed=true;
+ saveGame();
+ $('freeBtn').textContent='REDAN HÄMTAD';
+ openCase(true);
+};
+const titles={open:'Öppna lådor',inventory:'Min samling',market:'Marknad',upgrade:'Uppgraderingar',daily:'Daglig belöning'};
+document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>{
+ document.querySelectorAll('.nav').forEach(n=>n.classList.remove('active'));
+ b.classList.add('active');
+ const p=b.dataset.page;
+ $('pageTitle').textContent=titles[p];
+ $('caseView').style.display=p==='open'?'block':'none';
+ $('inventorySection').style.display=p==='inventory'||p==='open'?'block':'none';
+ $('otherSection').style.display=p==='market'||p==='upgrade'||p==='daily'?'block':'none';
+ const o=$('otherSection');
+ if(p==='market'){
+  o.innerHTML='<div class="section-title"><h3>⇄ Marknad</h3><small>Fiktiva värden</small></div><p style="color:var(--muted)">Sälj skins från din samling och tjäna spelmynt. Du får 75% av värdet.</p><button class="secondary" id="marketSell">Sälj alla skins</button>';
+  $('marketSell').onclick=()=>{
+   if(!inventory.length){toast('Du har inga skins att sälja.');return;}
+   coins+=inventory.reduce((a,s)=>a+Math.floor(s.value*.75),0);
+   inventory=[];
+   saveGame();
+   updateCoins();
+   renderInventory();
+   toast('Alla skins sålda!');
+  };
+ }
+ if(p==='upgrade'){
+  o.innerHTML='<div class="section-title"><h3>⬆ Skin-upgrade</h3></div><p>Betala 150 mynt för att försöka höja ett slumpmässigt skin till nästa raritetsnivå. 45% chans att lyckas. Legendariska skins kan inte uppgraderas mer.</p><button class="primary" id="upgradeBtn">UPPGRADERA · 150 🪙</button><p id="upgradeMsg" style="color:var(--muted)"></p>';
+  $('upgradeBtn').onclick=()=>{
+   const tiers=['common','uncommon','rare','epic','legendary'];
+   const eligible=inventory.map((s,i)=>({s,i})).filter(x=>tiers.indexOf(x.s.rarity)>=0&&tiers.indexOf(x.s.rarity)<4);
+   if(!eligible.length){
+    $('upgradeMsg').textContent=inventory.length?'Alla dina skins är redan legendariska eller kan inte uppgraderas.':'Öppna en låda först så att du har ett skin att uppgradera.';
+    return;
+   }
+   if(coins<150){toast('Du behöver 150 mynt.');return;}
+   coins-=150;
+   updateCoins();
+   const chosen=eligible[Math.floor(Math.random()*eligible.length)],s=inventory[chosen.i],tier=tiers.indexOf(s.rarity);
+   if(Math.random()<.45){
+    s.rarity=tiers[tier+1];
+    s.value=Math.round(s.value*2.1);
+    $('upgradeMsg').textContent='✨ Uppgradering lyckades! '+s.name+' är nu '+rarities[s.rarity][0]+'.';
+   }else{
+    $('upgradeMsg').textContent='Uppgraderingen misslyckades. Ditt skin behålls, men 150 mynt användes.';
+   }
+   renderInventory();
+   saveGame();
+  };
+ }
+ if(p==='daily'){
+  o.innerHTML='<div class="section-title"><h3>🎁 Daglig belöning</h3></div><p>Hämta en engångsbonus på 250 spelmynt i den här sessionen.</p><button class="primary" id="dailyBtn">HÄMTA 250 🪙</button>';
+  $('dailyBtn').onclick=()=>{
+   if(window.dailyTaken){toast('Du har redan hämtat dagens bonus.');return;}
+   window.dailyTaken=true;
+   coins+=250;
+   updateCoins();
+   $('dailyBtn').disabled=true;
+   $('dailyBtn').textContent='BONUS HÄMTAD';
+   toast('+250 mynt!');
+  };
+ }
+});
+loadGame();
+renderCases();
+renderTrack();
+renderInventory();
+renderRecent();
+updateCoins();
+if(freeClaimed){$('freeBtn').textContent='REDAN HÄMTAD';}
+</script>
+</body>
+</html>
